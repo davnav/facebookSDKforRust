@@ -5,3 +5,5 @@ authors = ["naveen <naveendavisv@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+hyper = "0.13.7"
+hyper-tls = "0.4.3"
