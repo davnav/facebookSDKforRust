@@ -1,15 +1,15 @@
 
 use hyper::Client;
 
-static FACEBOOK_GRAPH_URL = "http://graph.facebook.com";
-static FACEBOOK_WWW_URL = "http://www.facebook.com";
-static FACEBOOK_OAUTH_DIALOG_PATH = "dialog/oauth?";
-static VALID_API_VERSIONS = ["3.1","3.2","3.3","4.0","5.0","6.0","7.0"];
-static VALID_SEARCH_TYPES = ["place","placetopic"];
+static FACEBOOK_GRAPH_URL:&str = "http://graph.facebook.com";
+static FACEBOOK_WWW_URL:&str = "http://www.facebook.com";
+static FACEBOOK_OAUTH_DIALOG_PATH:&str = "dialog/oauth?";
+static VALID_API_VERSIONS:[&str;7] = ["3.1","3.2","3.3","4.0","5.0","6.0","7.0"];
+static VALID_SEARCH_TYPES:[&str;2] = ["place","placetopic"];
 
 
 
-
+#[derive(Debug)]
 struct GraphAPI{
     access_token:Option<String>,
     timeout: Option<f64>,
@@ -108,9 +108,8 @@ impl GraphAPI{
 
     fn execute(&self){
 
-            todo!()
-
-        
+        println!("{:?}",self);
+        todo!(); 
 
     }
 
@@ -121,9 +120,9 @@ mod test{
     #[test]
     fn it_works(){
         let graph = GraphAPI::new();
-        let gg    = graph
-                        .with_acces_token(Some("asdasdasd".to_string()))
-                        .with_version(Some("v.8.0".to_string()))
-                        .execute();
+        graph
+            .with_acces_token(Some("asdasdasd".to_string()))
+            .with_version(Some("v.8.0".to_string()))
+            .execute();
     }
 }
