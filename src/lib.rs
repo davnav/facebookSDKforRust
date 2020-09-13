@@ -1,8 +1,14 @@
 
-use hyper::{Client, body::HttpBody as _};
+use hyper::{Client, body::HttpBody as _,Response};
 use hyper_tls::HttpsConnector;
 use tokio::io::{self, AsyncWriteExt as _};
-
+use std::time::Duration;
+//use tokio::process::Command;
+use tokio::task;
+use tokio::time;
+use tokio::prelude::*;
+use tokio_test::block_on;
+use std::env;
 
 
 
@@ -118,29 +124,41 @@ impl GraphAPI{
     }
 
 
-    pub fn get_permissions(&self,user_id:String) -> Vec<String>{
+    pub  async fn get_permissions(&self,user_id:String) -> Result< (),Box<dyn std::error::Error>>{
 
-        let url = format!("{}/{}/{}/permissions",FACEBOOK_GRAPH_URL,self.version,user_id);
-        let response = self.request(url);
-        todo!()
-    }
-   // #[tokio::main]
-    pub async fn request(&self,url:String) -> Result<(),Box<dyn std::error::Error>>{
+        let url = format!("{}/{}/{}/permissions?access_token={}",FACEBOOK_GRAPH_URL,self.version,user_id,self.access_token.clone().unwrap());
+        println!("{:?}",url);
+       // let response = self.request(url).await?;
         let https = HttpsConnector::new();
         let client = Client::builder().build::<_,hyper::Body>(https);
-        let mut res = client.get(url.parse()?).await?; 
-        Ok(())
+      //  println!("{:?}",client);
+        let res = client.get(url.parse()?).await?; 
+        let res = hyper::body::to_bytes(res.into_body()).await?;
+        println!("{:?}",res);
+        let mut v:Vec<hyper::Response<hyper::body::Body>> ;
+     ;
+         Ok(())
+         
     }
+   
 
 }
 mod test{
     use super::*;
+    use tokio::prelude::*;
     #[test]
-    fn it_works(){
+   
+    fn it_works() {
+
         let graph = GraphAPI::new();
-        graph
-            .with_acces_token(Some("asdasdasd".to_string()))
-            .with_version("v.8.0".to_string())
+        let g = graph
+            .with_acces_token(Some(env::var("FACEBOOK_ACCESSTOKEN").unwrap().to_string()))
+            .with_version("v8.0".to_string())
             .build();
+         //   println!("{:?}",g);
+            tokio_test::block_on( g.get_permissions("me".to_string())  );
+            
+        
+
     }
 }
