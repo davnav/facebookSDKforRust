@@ -1,4 +1,10 @@
 
+///Rust library for the facebook Platform
+/// This is a client library designed for the Graph API's in Rust.
+/// Read more about the Graph API at https://developers.facebook.com/docs/graph-api 
+///
+
+///libraries used for the project
 use hyper::{Client, body::HttpBody as _,Response};
 use hyper_tls::HttpsConnector;
 use tokio::io::{self, AsyncWriteExt as _};
@@ -11,12 +17,26 @@ use tokio_test::block_on;
 use std::env;
 
 
-
+///static variables using
 static FACEBOOK_GRAPH_URL:&str = "https://graph.facebook.com";
 static FACEBOOK_WWW_URL:&str = "https://www.facebook.com";
 static FACEBOOK_OAUTH_DIALOG_PATH:&str = "dialog/oauth?";
 static VALID_API_VERSIONS:[&str;7] = ["3.1","3.2","3.3","4.0","5.0","6.0","7.0"];
 static VALID_SEARCH_TYPES:[&str;2] = ["place","placetopic"];
+
+
+///A client for Facebook Graph API.
+///Graph API made up of objects in Facebook(eg. people,photos,pages,events ..etc)
+/// This Rust client provides access to those primitive types in a generic way.
+/// For example, for a given Oauth token, the below code fetch the profile of the 
+/// active user permissions
+///  graph = 
+/// let graph = GraphAPI::new();
+/// let g = graph
+///            .with_acces_token(Some(env::var("FACEBOOK_ACCESSTOKEN").unwrap().to_string()))
+///            .with_version("v8.0".to_string())
+///            .build();
+/// tokio::block_on(g.get_permissions("me".to_string()))
 
 
 
