@@ -5,8 +5,10 @@
 ///
 
 ///libraries used for the project
-use hyper::{Client, body::HttpBody as _,Response};
-use hyper_tls::HttpsConnector;
+//use hyper::{Client, body::HttpBody as _,Response};
+//use hyper::Error;
+//use hyper_tls::HttpsConnector;
+use std::str;
 use tokio::io::{self, AsyncWriteExt as _};
 use std::time::Duration;
 //use tokio::process::Command;
@@ -15,7 +17,16 @@ use tokio::time;
 use tokio::prelude::*;
 use tokio_test::block_on;
 use std::env;
+use serde_json::{ Value};
+use anyhow::Context;
+use anyhow::Result;
+//use thiserror::Error;
+//use hyper::http::*;
+//use std::error::Error;
 
+mod error;
+use error::FacebookError;
+//type NewResult<T> = Result<T,Box<dyn FacebookError>>;
 
 ///static variables using
 static FACEBOOK_GRAPH_URL:&str = "https://graph.facebook.com";
@@ -38,8 +49,40 @@ static VALID_SEARCH_TYPES:[&str;2] = ["place","placetopic"];
 ///            .build();
 /// tokio::block_on(g.get_permissions("me".to_string()))
 
+///Error handling
+/*
+#[derive(Debug)]
+pub enum ErrorKind{
+    
+    SerdeError(serde_json::Error),
+    //     #[error("serde error")]
+    //         SerdeError ( #[from] serde_json::Error) ,
+    // #[error("invalid URI")]
+    // HyperInvalidUri ( #[from] hyper::http::uri::InvalidUri ),
 
+    HyperInvalidUri(hyper::http::uri::InvalidUri),
+    // #[error("hyper error")]
+    // HyperError ( #[from] hyper::error::Error),
 
+    //  HyperError(),
+   // #[error("Uri error")]
+   // HyperUriErr( #[from] <hyper::Uri as Trait>::Error),
+
+  //  #[error("std error")]
+  //  StdError( #[from] std::error::Error)
+ //   #[error("other")]
+//    Other(#[source] AnyError),
+}
+
+impl SerdeError for ErrorKind{
+    fn fmt(&self,)
+}
+*/
+#[derive(Debug)]
+pub struct Permissions{
+    permission:String,
+    status:String,
+}
 #[derive(Debug)]
 pub struct GraphAPI{
     access_token:Option<String>,
@@ -138,26 +181,38 @@ impl GraphAPI{
     pub fn build(self) -> Self{
 
         //let mut url = 
-        println!("{:?}",self);
+        //println!("{:?}",self);
         self 
 
     }
 
 
-    pub  async fn get_permissions(&self,user_id:String) -> Result< (),Box<dyn std::error::Error>>{
+    pub  async fn get_permissions(&self,user_id:String) -> Result<(),FacebookError>{
 
         let url = format!("{}/{}/{}/permissions?access_token={}",FACEBOOK_GRAPH_URL,self.version,user_id,self.access_token.clone().unwrap());
         println!("{:?}",url);
        // let response = self.request(url).await?;
-        let https = HttpsConnector::new();
-        let client = Client::builder().build::<_,hyper::Body>(https);
+       // let https = HttpsConnector::new();
+       // let client = Client::builder().build::<_,hyper::Body>(https);
       //  println!("{:?}",client);
-        let res = client.get(url.parse()?).await?; 
-        let res = hyper::body::to_bytes(res.into_body()).await?;
-        println!("{:?}",res);
-        let mut v:Vec<hyper::Response<hyper::body::Body>> ;
-     ;
-         Ok(())
+    //     let res = client.get(url.parse().unwrap()).await
+    //                                                .with_context(|| "failed to connect facebook")
+    //                                                .map_err(|e| FacebookError::HyperError)?;
+
+    //    // hyper::body::to_bytes(res.into_body()).await;
+    //     println!("{:?}",res);
+    //     //let res_bytes = res.into_body().map(|body| body.into());
+    //     //let str_res = str::from_utf8(res).unwrap();
+    //     let v:Value = serde_json::from_str(res_bytes.to_str()).unwrap();
+    //     let mut v:Vec<hyper::Response<hyper::body::Body>> ;
+    //      Ok(())
+
+
+        let res = reqwest::get(&url).await?;
+        println!("{}",res.status());
+        let body = res.text().await?;
+        println!("{}",body);
+        Ok(())
          
     }
    
