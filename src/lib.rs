@@ -18,6 +18,7 @@ use tokio::prelude::*;
 use tokio_test::block_on;
 use std::env;
 use serde_json::{ Value};
+use serde::{Serialize,Deserialize };
 use anyhow::Context;
 use anyhow::Result;
 //use thiserror::Error;
@@ -78,11 +79,16 @@ impl SerdeError for ErrorKind{
     fn fmt(&self,)
 }
 */
-#[derive(Debug)]
+#[derive(Serialize,Deserialize,Debug)]
+pub struct Data{
+    data:Vec<Permissions>,
+}
+#[derive(Serialize,Deserialize,Debug)]
 pub struct Permissions{
     permission:String,
     status:String,
 }
+
 #[derive(Debug)]
 pub struct GraphAPI{
     access_token:Option<String>,
@@ -209,9 +215,13 @@ impl GraphAPI{
 
 
         let res = reqwest::get(&url).await?;
-        println!("{}",res.status());
-        let body = res.text().await?;
-        println!("{}",body);
+        //println!("{}",res.status());
+        //let res = res.text().await?;
+        //println!("{}",res);
+        let body :Data = res.json().await?;
+        for i in body.data.iter(){
+            println!("{},{}",i.permission,i.status);
+        }
         Ok(())
          
     }
