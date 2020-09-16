@@ -5,29 +5,21 @@
 ///
 
 ///libraries used for the project
-//use hyper::{Client, body::HttpBody as _,Response};
-//use hyper::Error;
-//use hyper_tls::HttpsConnector;
 use std::str;
 use tokio::io::{self, AsyncWriteExt as _};
 use std::time::Duration;
-//use tokio::process::Command;
 use tokio::task;
 use tokio::time;
 use tokio::prelude::*;
 use tokio_test::block_on;
 use std::env;
 use serde_json::{ Value};
-use serde::{Serialize,Deserialize };
+use serde::{ Serialize,Deserialize };
 use anyhow::Context;
 use anyhow::Result;
-//use thiserror::Error;
-//use hyper::http::*;
-//use std::error::Error;
 
 mod error;
 use error::FacebookError;
-//type NewResult<T> = Result<T,Box<dyn FacebookError>>;
 
 ///static variables using
 static FACEBOOK_GRAPH_URL:&str = "https://graph.facebook.com";
@@ -50,35 +42,7 @@ static VALID_SEARCH_TYPES:[&str;2] = ["place","placetopic"];
 ///            .build();
 /// tokio::block_on(g.get_permissions("me".to_string()))
 
-///Error handling
-/*
-#[derive(Debug)]
-pub enum ErrorKind{
-    
-    SerdeError(serde_json::Error),
-    //     #[error("serde error")]
-    //         SerdeError ( #[from] serde_json::Error) ,
-    // #[error("invalid URI")]
-    // HyperInvalidUri ( #[from] hyper::http::uri::InvalidUri ),
 
-    HyperInvalidUri(hyper::http::uri::InvalidUri),
-    // #[error("hyper error")]
-    // HyperError ( #[from] hyper::error::Error),
-
-    //  HyperError(),
-   // #[error("Uri error")]
-   // HyperUriErr( #[from] <hyper::Uri as Trait>::Error),
-
-  //  #[error("std error")]
-  //  StdError( #[from] std::error::Error)
- //   #[error("other")]
-//    Other(#[source] AnyError),
-}
-
-impl SerdeError for ErrorKind{
-    fn fmt(&self,)
-}
-*/
 #[derive(Serialize,Deserialize,Debug)]
 pub struct Data{
     data:Vec<Permissions>,
@@ -186,43 +150,19 @@ impl GraphAPI{
 
     pub fn build(self) -> Self{
 
-        //let mut url = 
-        //println!("{:?}",self);
         self 
 
     }
 
 
-    pub  async fn get_permissions(&self,user_id:String) -> Result<(),FacebookError>{
+    pub  async fn get_permissions(&self,user_id:String) -> Result<(Vec<Permissions>),FacebookError>{
 
         let url = format!("{}/{}/{}/permissions?access_token={}",FACEBOOK_GRAPH_URL,self.version,user_id,self.access_token.clone().unwrap());
         println!("{:?}",url);
-       // let response = self.request(url).await?;
-       // let https = HttpsConnector::new();
-       // let client = Client::builder().build::<_,hyper::Body>(https);
-      //  println!("{:?}",client);
-    //     let res = client.get(url.parse().unwrap()).await
-    //                                                .with_context(|| "failed to connect facebook")
-    //                                                .map_err(|e| FacebookError::HyperError)?;
-
-    //    // hyper::body::to_bytes(res.into_body()).await;
-    //     println!("{:?}",res);
-    //     //let res_bytes = res.into_body().map(|body| body.into());
-    //     //let str_res = str::from_utf8(res).unwrap();
-    //     let v:Value = serde_json::from_str(res_bytes.to_str()).unwrap();
-    //     let mut v:Vec<hyper::Response<hyper::body::Body>> ;
-    //      Ok(())
-
 
         let res = reqwest::get(&url).await?;
-        //println!("{}",res.status());
-        //let res = res.text().await?;
-        //println!("{}",res);
         let body :Data = res.json().await?;
-        for i in body.data.iter(){
-            println!("{},{}",i.permission,i.status);
-        }
-        Ok(())
+        Ok((body.data))
          
     }
    
@@ -240,8 +180,12 @@ mod test{
             .with_acces_token(Some(env::var("FACEBOOK_ACCESSTOKEN").unwrap().to_string()))
             .with_version("v8.0".to_string())
             .build();
-         //   println!("{:?}",g);
-            tokio_test::block_on( g.get_permissions("me".to_string())  );
+            
+                 let my_permissions = tokio_test::block_on(g.get_permissions("me".to_string()));
+                 for i in my_permissions.unwrap().iter(){
+                     println!("{}, {}",i.permission,i.status);
+                 }
+            
             
         
 
