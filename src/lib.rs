@@ -155,6 +155,19 @@ impl GraphAPI{
     }
 
 
+    //pub  async fn get_object(&self,user_id:String) -> Result<(Vec<Object>),FacebookError>{
+    pub  async fn get_object(&self,user_id:String) -> Result<(),FacebookError>{
+
+        let url = format!("{}/{}/{}?access_token={}",FACEBOOK_GRAPH_URL,self.version,user_id,self.access_token.clone().unwrap());
+        println!("{:?}",url);
+
+        let res = reqwest::get(&url).await?;
+       let body = res.text().await?;
+       println!("{}",body);
+       Ok(())
+    }     
+    
+
     pub  async fn get_permissions(&self,user_id:String) -> Result<(Vec<Permissions>),FacebookError>{
 
         let url = format!("{}/{}/{}/permissions?access_token={}",FACEBOOK_GRAPH_URL,self.version,user_id,self.access_token.clone().unwrap());
@@ -173,7 +186,7 @@ mod test{
     use tokio::prelude::*;
     #[test]
    
-    fn it_works() {
+    fn get_permission_test() {
 
         let graph = GraphAPI::new();
         let g = graph
@@ -185,9 +198,24 @@ mod test{
                  for i in my_permissions.unwrap().iter(){
                      println!("{}, {}",i.permission,i.status);
                  }
-            
-            
-        
-
     }
+    #[test]
+    fn get_object_test() {
+
+        let graph = GraphAPI::new();
+        let g = graph
+            .with_acces_token(Some(env::var("FACEBOOK_ACCESSTOKEN").unwrap().to_string()))
+            .with_version("v8.0".to_string())
+            .build();
+            
+                 let my_object = tokio_test::block_on(g.get_object("me".to_string()));
+                //  for i in my_permissions.unwrap().iter(){
+                //      println!("{}, {}",i.permission,i.status);
+                //  }
+    }
+
+
+
+
+
 }
